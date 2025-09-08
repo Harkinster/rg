@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Reveal Gender 2.0</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <h1>REVEAL GENDER 2.0</h1>
+      <button id="openSettings" class="icon-button" aria-label="Ouvrir les paramètres" title="Paramètres">
+        ⚙️
+      </button>
+    </header>
+
+    <main class="container">
+      <section class="card">
+        <h2>Fais ton pronostic</h2>
+        <form id="guessForm" class="guess-form">
+          <div class="field">
+            <label for="firstName">Ton prénom</label>
+            <input id="firstName" name="firstName" type="text" placeholder="Ex: Léa" required />
+          </div>
+
+          <div class="field">
+            <span class="label">Tu penses que c'est...</span>
+            <div class="choices">
+              <label class="choice">
+                <input type="radio" name="guess" value="garcon" required />
+                <span class="pill pill-boy">👦 Garçon</span>
+              </label>
+              <label class="choice">
+                <input type="radio" name="guess" value="fille" required />
+                <span class="pill pill-girl">👧 Fille</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button id="spinButton" type="submit" class="primary">Lancer la machine</button>
+          </div>
+        </form>
+
+        <div id="slotWrapper" class="slot-wrapper hidden" aria-live="polite">
+          <div class="slot-machine" id="slotMachine" aria-hidden="true">
+            <div class="reel" id="reel1"></div>
+            <div class="reel" id="reel2"></div>
+            <div class="reel" id="reel3"></div>
+          </div>
+          <div id="revealText" class="reveal-text"></div>
+        </div>
+      </section>
+
+      <section id="guestbookSection" class="card hidden">
+        <h2>Livre d'or</h2>
+        <p class="muted">Après le reveal, laisse un petit mot ❤️</p>
+        <form id="messageForm" class="message-form">
+          <textarea id="messageInput" rows="3" placeholder="Félicitations ! On vous souhaite tout le bonheur…" disabled></textarea>
+          <div class="actions">
+            <button id="saveMessageBtn" class="secondary" disabled>Publier mon message</button>
+          </div>
+        </form>
+        <ul id="guestbook" class="guestbook"></ul>
+      </section>
+
+      <section id="participantsSection" class="card hidden">
+        <h2>Participants</h2>
+        <div class="stats" id="stats"></div>
+        <ul id="entriesList" class="entries"></ul>
+      </section>
+    </main>
+
+    <!-- Paramètres (hôte) -->
+    <dialog id="settingsDialog" class="settings">
+      <form method="dialog">
+        <h3>Paramètres du reveal</h3>
+        <p class="muted small">Choisis le sexe à révéler. Les rouleaux s'arrêteront dessus.</p>
+        <div class="field">
+          <label class="choice inline">
+            <input type="radio" name="revealGender" value="garcon" />
+            <span class="pill pill-boy">👦 Garçon</span>
+          </label>
+          <label class="choice inline">
+            <input type="radio" name="revealGender" value="fille" />
+            <span class="pill pill-girl">👧 Fille</span>
+          </label>
+        </div>
+        <div class="actions">
+          <button value="cancel" class="secondary">Annuler</button>
+          <button id="saveSettings" value="default" class="primary">Enregistrer</button>
+        </div>
+      </form>
+    </dialog>
+
+    <footer class="footer muted">
+      Fait avec ❤️ par ocematt
+    <script src="script.js"></script>
+  </body>
+  </html>

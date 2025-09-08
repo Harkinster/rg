@@ -1,0 +1,189 @@
+:root {
+  --bg: #FAF6EC;
+  --card: #FFFFFF;
+  --text: #2a2f2a;
+  --muted: #6f736a;
+  --primary: #8FD5AE;
+  --primary-strong: #6FC39A;
+  --boy: #58a6ff;
+  --girl: #ff7aa2;
+  --success: #4CAF7A;
+  --danger: #E57373;
+  --border: #E6E0D6;
+  /* Image de fond du thème (ciel avec cygnes/cigognes portant des bébés) */
+  /* Remplacez l'URL ci-dessous par votre image locale ou en ligne */
+  --bg-image: url('fond.png');
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  font-family: 'Poppins', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: var(--text);
+  /* Fallback couleur si l'image ne charge pas */
+  background-color: var(--bg);
+  /* Superpose un voile blanc doux sur toute la hauteur pour la lisibilité */
+  background-image:
+    linear-gradient(rgba(255, 253, 247, 0.85), rgba(250, 246, 236, 0.85)),
+    var(--bg-image);
+  background-size: cover, cover;
+  background-position: center, center;
+  background-repeat: no-repeat, no-repeat;
+  background-attachment: fixed, fixed;
+}
+
+.app-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px clamp(16px, 4vw, 32px);
+}
+.app-header h1 { margin: 0; font-size: clamp(22px, 3vw, 28px); text-align: center; }
+.icon-button {
+  font-size: 20px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  padding: 6px 10px;
+  cursor: pointer;
+}
+.icon-button:hover { background: #EFE9DC; }
+
+.container {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 0 clamp(16px, 4vw, 32px) 40px;
+  display: grid;
+  gap: 18px;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: clamp(16px, 3vw, 22px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+}
+.card h2 { margin: 0 0 12px; font-size: 20px; }
+.muted { color: var(--muted); }
+.muted.small { font-size: 12px; }
+
+.field { margin: 12px 0; }
+.field .label, .field label { display: block; margin-bottom: 6px; }
+input[type="text"], textarea {
+  width: 100%;
+  background: #FFFFFF;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+textarea { resize: vertical; }
+
+.choices { display: flex; gap: 10px; flex-wrap: wrap; }
+.choice { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+.choice input { display: none; }
+.pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 12px; border-radius: 999px; border: 1px solid var(--border);
+  background: #FFFFFF; color: var(--text);
+  transition: transform .06s ease;
+}
+.pill:hover { transform: translateY(-1px); }
+.pill-boy { background: linear-gradient(135deg, rgba(88,166,255,.25), transparent); }
+.pill-girl { background: linear-gradient(135deg, rgba(255,122,162,.25), transparent); }
+.choice input:checked + .pill { outline: 2px solid var(--primary); }
+
+.actions { display: flex; gap: 10px; margin-top: 10px; }
+.primary, .secondary {
+  border: 0; border-radius: 10px; padding: 10px 14px; cursor: pointer; color: white;
+}
+.primary { background: linear-gradient(135deg, var(--primary), var(--primary-strong)); }
+.secondary { background: #EEE9DE; color: var(--text); }
+.primary:disabled, .secondary:disabled { opacity: .6; cursor: not-allowed; }
+
+.slot-wrapper { margin-top: 14px; text-align: center; }
+.hidden { display: none; }
+
+.slot-machine {
+  margin: 10px auto 6px;
+  width: min(520px, 95%);
+  height: 96px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* trois roues */
+  gap: 8px;
+  padding: 8px;
+  background: #FAF7F0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+}
+.slot-machine::before, .slot-machine::after {
+  content: "";
+  position: absolute; left: 0; right: 0; height: 24px;
+  pointer-events: none;
+}
+.slot-machine::before { top: 0; background: linear-gradient(#FAF7F0, rgba(250,247,240,0)); }
+.slot-machine::after { bottom: 0; background: linear-gradient(rgba(250,247,240,0), #FAF7F0); }
+
+.reel {
+  position: relative; overflow: hidden; border-radius: 8px; border: 1px solid var(--border);
+}
+.slot-machine .reel:not(:first-child) { display: block; }
+.reel .symbols { will-change: transform; }
+.symbol {
+  height: 96px; display: grid; place-items: center; font-weight: 600; font-size: clamp(22px, 4vw, 28px);
+}
+.symbol.boy { color: var(--boy); }
+.symbol.girl { color: var(--girl); }
+
+.reveal-text { font-size: clamp(24px, 4vw, 36px); font-weight: 700; margin-top: 6px; }
+.reveal-boy { color: var(--boy); }
+.reveal-girl { color: var(--girl); }
+
+.entries, .guestbook {
+  list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 8px;
+}
+.entry, .message {
+  background: #FFFFFF; border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px;
+}
+.entry .meta { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.tag { padding: 3px 8px; border-radius: 999px; font-size: 12px; border: 1px solid var(--border); }
+.tag.boy { background: rgba(88,166,255,.12); color: var(--boy); }
+.tag.girl { background: rgba(255,122,162,.12); color: var(--girl); }
+.tag.ok { background: rgba(62,207,142,.12); color: var(--success); }
+.tag.ko { background: rgba(255,93,93,.12); color: var(--danger); }
+.small { font-size: 12px; }
+
+.stats { display: flex; gap: 8px; flex-wrap: wrap; }
+.stat { background: #FFFFFF; border: 1px solid var(--border); border-radius: 999px; padding: 6px 10px; }
+
+.footer { text-align: center; padding: 22px 0 28px; font-size: 12px; }
+
+dialog.settings::backdrop { background: rgba(0,0,0,.5); }
+dialog.settings {
+  background: var(--card); color: var(--text); border: 1px solid var(--border);
+  border-radius: 14px; padding: 16px; width: min(520px, 92%);
+}
+.choice.inline { display: inline-flex; margin-right: 8px; }
+
+@media (min-width: 900px) {
+  .container { grid-template-columns: 1fr 1fr; }
+  .container > .card:nth-child(1) { grid-column: 1 / -1; }
+}
+.container > .card:first-child {
+  max-width: 560px;
+  margin: 0 auto;
+  text-align: center;
+}
+.container > .card:first-child .field .label,
+.container > .card:first-child label { text-align: center; }
+.container > .card:first-child .choices { justify-content: center; }
+.container > .card:first-child .actions { justify-content: center; }
+.container > .card:first-child input[type="text"] { display: block; margin: 0 auto; }
