@@ -1,12 +1,15 @@
 (() => {
-  const SYMBOL_HEIGHT = 96;
+  // Script principal de la page : tout est isolé pour ne pas polluer le scope global
+
+  // Dimensions et données utilisées pour construire les rouleaux
+  const SYMBOL_HEIGHT = 96; // hauteur d'un symbole en pixels
   const REPEAT = 6; // fewer repeats -> less distance -> slower spin (same duration)
   const SYMBOLS = [
     { key: 'fille', label: '👧 Fille', cls: 'girl' },
     { key: 'garcon', label: '👦 Garçon', cls: 'boy' },
   ];
 
-  // Elements
+  // Références vers les éléments du DOM
   const form = document.getElementById('guessForm');
   const firstNameInput = document.getElementById('firstName');
   const slotWrapper = document.getElementById('slotWrapper');
@@ -31,7 +34,7 @@
   const openSettingsBtn = document.getElementById('openSettings');
   const saveSettingsBtn = document.getElementById('saveSettings');
 
-  // Storage helpers
+  // Helpers pour enregistrer/charger des données depuis le localStorage
   const load = (key, fallback) => {
     try {
       const raw = localStorage.getItem(key);
@@ -40,15 +43,15 @@
   };
   const save = (key, value) => localStorage.setItem(key, JSON.stringify(value));
 
-  // Config: reveal gender (host can set via settings)
-  const getRevealGender = () => load('revealGender', 'garcon'); // default can be changed
+  // Configuration : sexe à révéler (modifiable par l'hôte)
+  const getRevealGender = () => load('revealGender', 'garcon'); // valeur par défaut
   const setRevealGender = (val) => save('revealGender', val);
 
-  // Data
+  // Gestion des entrées des participants
   const getEntries = () => load('entries', []);
   const setEntries = (arr) => save('entries', arr);
 
-  // Build reels content
+  // Construit une roue contenant plusieurs cycles de symboles et se terminant par le symbole cible
   function makeReelDom(targetKey) {
     const container = document.createElement('div');
     container.className = 'symbols';
@@ -69,10 +72,12 @@
     return container;
   }
 
+  // Nettoie les trois roues
   function clearReels() {
     for (const reel of reels) reel.innerHTML = '';
   }
 
+  // Prépare les roues avant le spin
   function setupReels(targetKey) {
     clearReels();
     for (const reel of reels) {
@@ -80,6 +85,7 @@
     }
   }
 
+  // Lance l'animation de rotation et renvoie la durée la plus longue
   function spinReels(targetKey) {
     const targetIndex = REPEAT * SYMBOLS.length; // final appended target
     const baseDuration = 7000; // 7s total (dernier arrêt)
@@ -120,6 +126,7 @@
     return Math.max(...reelDurations);
   }
 
+  // Affiche des statistiques simples à partir des participations
   function renderStats(entries) {
     const boy = entries.filter(e => e.guess === 'garcon').length;
     const girl = entries.filter(e => e.guess === 'fille').length;
@@ -133,6 +140,7 @@
     ].join(' ');
   }
 
+  // Rend la liste des participations dans la section "Participants"
   function renderEntries() {
     const entries = getEntries();
     renderStats(entries);
@@ -154,6 +162,7 @@
     }
   }
 
+  // Affiche uniquement les messages du livre d'or
   function renderGuestbook() {
     // Guestbook is derived from entries with a message
     const messages = getEntries().filter(e => e.message && e.message.trim() !== '');
@@ -173,6 +182,7 @@
     }
   }
 
+  // Montre le résultat final après l'arrêt des rouleaux
   function showReveal(finalKey) {
     const sym = SYMBOLS.find(s => s.key === finalKey) || SYMBOLS[0];
     const cls = finalKey === 'garcon' ? 'reveal-boy' : 'reveal-girl';
@@ -182,6 +192,7 @@
 
   let lastSubmission = null; // holds name+guess to allow message posting
 
+  // Soumission du formulaire de pronostic
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     const fd = new FormData(form);
@@ -230,7 +241,7 @@
     }, duration + 50);
   });
 
-  // Save message to the latest entry by this name without message
+  // Sauvegarde le message pour la dernière participation sans message
   messageForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const text = (messageInput.value || '').trim();
@@ -249,7 +260,7 @@
     renderGuestbook();
   });
 
-  // Settings dialog
+  // Gestion de la fenêtre de paramètres
   openSettingsBtn.addEventListener('click', () => {
     const current = getRevealGender();
     settingsDialog.querySelectorAll('input[name="revealGender"]').forEach(i => {
@@ -266,6 +277,7 @@
   });
 
   // Utilities
+  // Échappe les caractères HTML pour éviter les injections simples
   function escapeHtml(str) {
     return str
       .replaceAll('&', '&amp;')
@@ -275,7 +287,7 @@
       .replaceAll("'", '&#039;');
   }
 
-  // Initial render
+  // Initialisation de l'application au chargement de la page
   (function init() {
     // Build idle reels with current config
     setupReels(getRevealGender());
