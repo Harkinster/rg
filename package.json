@@ -1,0 +1,12 @@
+{
+  "name": "gender-reveal",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --check server.js && node --check script.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "mysql2": "^3.6.0"
+  }
+}
