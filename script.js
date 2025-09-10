@@ -47,9 +47,34 @@
   const getRevealGender = () => load('revealGender', 'garcon'); // valeur par défaut
   const setRevealGender = (val) => save('revealGender', val);
 
-  // Gestion des entrées des participants
-  const getEntries = () => load('entries', []);
-  const setEntries = (arr) => save('entries', arr);
+  // Gestion des données via l'API (backend MariaDB)
+  async function fetchEntries() {
+    const res = await fetch('/api/entries');
+    return res.json();
+  }
+  async function createEntry(entry) {
+    const res = await fetch('/api/entries', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(entry),
+    });
+    return res.json();
+  }
+  async function saveMessage(id, message) {
+    await fetch(`/api/entries/${id}/message`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message }),
+    });
+  }
+  async function fetchGuestbook() {
+    const res = await fetch('/api/guestbook');
+    return res.json();
+  }
+  async function fetchStats() {
+    const res = await fetch('/api/stats');
+    return res.json();
+  }
 
   // Construit une roue contenant plusieurs cycles de symboles et se terminant par le symbole cible
   function makeReelDom(targetKey) {
@@ -126,12 +151,13 @@
     return Math.max(...reelDurations);
   }
 
-  // Affiche des statistiques simples à partir des participations
-  function renderStats(entries) {
-    const boy = entries.filter(e => e.guess === 'garcon').length;
-    const girl = entries.filter(e => e.guess === 'fille').length;
-    const ok = entries.filter(e => e.correct === true).length;
-    const total = entries.length;
+  // Affiche des statistiques simples à partir de la base de données
+  async function renderStats() {
+    const stats = await fetchStats();
+    const boy = stats.garcon || 0;
+    const girl = stats.fille || 0;
+    const ok = stats.ok || 0;
+    const total = stats.total || 0;
     statsEl.innerHTML = [
       `<span class="stat">👦 Garçon: <strong>${boy}</strong></span>`,
       `<span class="stat">👧 Fille: <strong>${girl}</strong></span>`,
@@ -141,9 +167,8 @@
   }
 
   // Rend la liste des participations dans la section "Participants"
-  function renderEntries() {
-    const entries = getEntries();
-    renderStats(entries);
+  async function renderEntries() {
+    const entries = await fetchEntries();
     entriesList.innerHTML = '';
     for (const e of entries.slice().reverse()) {
       const li = document.createElement('li');
@@ -163,11 +188,10 @@
   }
 
   // Affiche uniquement les messages du livre d'or
-  function renderGuestbook() {
-    // Guestbook is derived from entries with a message
-    const messages = getEntries().filter(e => e.message && e.message.trim() !== '');
+  async function renderGuestbook() {
+    const messages = await fetchGuestbook();
     guestbookList.innerHTML = '';
-    for (const m of messages.slice().reverse()) {
+    for (const m of messages) {
       const li = document.createElement('li');
       li.className = 'message';
       const when = new Date(m.time).toLocaleString();
@@ -219,19 +243,17 @@
     Array.from(form.elements).forEach(el => el.disabled = true);
 
     // After spin, record entry and enable message box
-    window.setTimeout(() => {
+    window.setTimeout(async () => {
       const correct = guess === finalKey;
-      lastSubmission = { name, guess, correct };
-      // Pre-fill message with empty and enable input
+      const { id } = await createEntry({ name, guess, correct });
+      lastSubmission = { id, name, guess, correct };
+      // Prépare la zone de message
       messageInput.disabled = false;
       saveMessageBtn.disabled = false;
 
-      // Save entry now (without message yet)
-      const entries = getEntries();
-      entries.push({ name, guess, correct, message: '', time: Date.now() });
-      setEntries(entries);
-      renderEntries();
-      renderGuestbook();
+      await renderEntries();
+      await renderGuestbook();
+      await renderStats();
 
       // Reset form (keep name for convenience)
       form.reset();
@@ -242,22 +264,15 @@
   });
 
   // Sauvegarde le message pour la dernière participation sans message
-  messageForm.addEventListener('submit', (e) => {
+  messageForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const text = (messageInput.value || '').trim();
     if (!lastSubmission) return;
-    const entries = getEntries();
-    // find most recent matching entry without message
-    for (let i = entries.length - 1; i >= 0; i--) {
-      if (entries[i].name === lastSubmission.name && entries[i].message === '') {
-        entries[i].message = text;
-        break;
-      }
-    }
-    setEntries(entries);
+    await saveMessage(lastSubmission.id, text);
     messageInput.value = '';
-    renderEntries();
-    renderGuestbook();
+    await renderEntries();
+    await renderGuestbook();
+    await renderStats();
   });
 
   // Gestion de la fenêtre de paramètres
@@ -288,10 +303,11 @@
   }
 
   // Initialisation de l'application au chargement de la page
-  (function init() {
+  (async function init() {
     // Build idle reels with current config
     setupReels(getRevealGender());
-    renderEntries();
-    renderGuestbook();
+    await renderEntries();
+    await renderGuestbook();
+    await renderStats();
   })();
 })();
