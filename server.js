@@ -1,22 +1,9 @@
-// Simple Express server connecting to MariaDB to store participants and messages
-// Configure database credentials via environment variables
-// Expected table:
-// CREATE TABLE entries (
-//   id INT AUTO_INCREMENT PRIMARY KEY,
-//   name VARCHAR(255),
-//   guess ENUM('garcon','fille'),
-//   correct TINYINT(1),
-//   message TEXT,
-//   time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-// );
-
 const express = require('express');
 const mysql = require('mysql2/promise');
 const path = require('path');
 
 const app = express();
 app.use(express.json());
-app.use(express.static(__dirname));
 
 const pool = mysql.createPool({
   host: process.env.DB_HOST || 'localhost',
@@ -25,14 +12,20 @@ const pool = mysql.createPool({
   database: process.env.DB_NAME || 'gender_reveal'
 });
 
+// === STATIC FILES ===
+app.use("/rg", express.static(__dirname));
+
+// === API BASE ===
+const apiBase = "/rg/api";
+
 // fetch all entries
-app.get('/api/entries', async (_req, res) => {
+app.get(`${apiBase}/entries`, async (_req, res) => {
   const [rows] = await pool.query('SELECT id,name,guess,correct,message,time FROM entries ORDER BY time ASC');
   res.json(rows);
 });
 
 // create new entry
-app.post('/api/entries', async (req, res) => {
+app.post(`${apiBase}/entries`, async (req, res) => {
   const { name, guess, correct } = req.body;
   const [result] = await pool.query(
     'INSERT INTO entries(name,guess,correct) VALUES (?,?,?)',
@@ -41,23 +34,23 @@ app.post('/api/entries', async (req, res) => {
   res.json({ id: result.insertId });
 });
 
-// save message for an entry
-app.post('/api/entries/:id/message', async (req, res) => {
+// save message
+app.post(`${apiBase}/entries/:id/message`, async (req, res) => {
   const { message } = req.body;
   await pool.query('UPDATE entries SET message=? WHERE id=?', [message, req.params.id]);
   res.json({ ok: true });
 });
 
-// guestbook messages only
-app.get('/api/guestbook', async (_req, res) => {
+// guestbook
+app.get(`${apiBase}/guestbook`, async (_req, res) => {
   const [rows] = await pool.query('SELECT name,message,time FROM entries WHERE message <> "" ORDER BY time DESC');
   res.json(rows);
 });
 
-// statistics (counts of guesses and correct ones)
-app.get('/api/stats', async (_req, res) => {
+// stats
+app.get(`${apiBase}/stats`, async (_req, res) => {
   const [rows] = await pool.query(
-    'SELECT\n      SUM(guess="garcon") AS garcon,\n      SUM(guess="fille") AS fille,\n      SUM(correct=1) AS ok,\n      COUNT(*) AS total\n     FROM entries'
+    'SELECT SUM(guess="garcon") AS garcon, SUM(guess="fille") AS fille, SUM(correct=1) AS ok, COUNT(*) AS total FROM entries'
   );
   res.json(rows[0]);
 });
